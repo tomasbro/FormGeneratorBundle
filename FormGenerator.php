@@ -2,8 +2,10 @@
 
 namespace Codete\FormGeneratorBundle;
 
+use Codete\FormGeneratorBundle\Event\BeforePopulateFormBuilder;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\Reader;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 
@@ -17,6 +19,11 @@ class FormGenerator
 {
     /** @var Reader */
     private $annotationReader;
+
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
     
     /** @var FormFactoryInterface */
     private $formFactory;
@@ -30,9 +37,10 @@ class FormGenerator
     /** @var FormViewProviderInterface[] */
     private $formViewProviders = array();
     
-    public function __construct(FormFactoryInterface $formFactory)
+    public function __construct(FormFactoryInterface $formFactory, EventDispatcher $eventDispatcher)
     {
         $this->annotationReader = new AnnotationReader();
+        $this->eventDispatcher = $eventDispatcher;
         $this->formFactory = $formFactory;
     }
     
@@ -77,7 +85,9 @@ class FormGenerator
     public function createFormBuilder($model, $form = 'default', $context = array())
     {
         $fb = $this->formFactory->createBuilder('form', $model);
-        $this->populateFormBuilder($fb, $model, $form, $context);
+        $event = new BeforePopulateFormBuilder($fb, $model, $form, $context);
+        $this->eventDispatcher->dispatch(FormGeneratorEvents::FORM_GENERATOR_BEFORE_POPULATE_FORM_BUILDER, $event);
+        $this->populateFormBuilder($event->getFb(), $event->getModel(), $event->getForm(), $event->getContext());
         return $fb;
     }
     
@@ -93,7 +103,9 @@ class FormGenerator
     public function createNamedFormBuilder($name, $model, $form = 'default', $context = array())
     {
         $fb = $this->formFactory->createNamedBuilder($name, 'form', $model);
-        $this->populateFormBuilder($fb, $model, $form, $context);
+        $event = new BeforePopulateFormBuilder($fb, $model, $form, $context);
+        $this->eventDispatcher->dispatch(FormGeneratorEvents::FORM_GENERATOR_BEFORE_POPULATE_FORM_BUILDER, $event);
+        $this->populateFormBuilder($event->getFb(), $event->getModel(), $event->getForm(), $event->getContext());
         return $fb;
     }
     

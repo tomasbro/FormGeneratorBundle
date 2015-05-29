@@ -15,8 +15,13 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase
     {
         $loader = require __DIR__.'/../vendor/autoload.php';
         AnnotationRegistry::registerLoader(array($loader, 'loadClass'));
+        $dispatcher = $this->getMockBuilder('Symfony\Component\EventDispatcher\EventDispatcher')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->formGenerator = new FormGenerator(
-            Forms::createFormFactoryBuilder()->getFormFactory()
+            Forms::createFormFactoryBuilder()->getFormFactory(),
+            $dispatcher
         );
     }
 }

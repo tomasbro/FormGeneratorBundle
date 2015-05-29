@@ -145,7 +145,7 @@ class FormGeneratorTest extends BaseTest
         );
     }
     
-    protected function checkForm($model, $expectedFields, $additionalCheck = null, $form = 'default', $context = array())
+    protected function checkForm($model, $expectedFields, callable $additionalCheck = null, $form = 'default', $context = array())
     {
         $form = $this->formGenerator->createFormBuilder($model, $form, $context)->getForm();
         $this->assertEquals(count($expectedFields), count($form));
